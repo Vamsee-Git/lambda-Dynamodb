@@ -75,6 +75,9 @@ resource "aws_lambda_function" "user_lambda" {
   package_type  = "Image"
   image_uri     = var.image_uri
   role          = aws_iam_role.lambda_exec.arn
+  tracing_config{
+    mode= "Active"
+  }
 
   environment {
     variables = {
