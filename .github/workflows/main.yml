@@ -26,7 +26,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::877786395093:role/github-oidc-vamsee
-          aws-region: us-west-2
+          aws-region: eu-north-1
           id-token: true
           
       - name: Login to Amazon ECR
