@@ -2,6 +2,15 @@ provider "aws" {
   region = "eu-north-1"
 }
 
+terraform {
+  backend "s3" {
+    bucket         = "terraform-state-backend-vamsee"
+    key            = "terraform/lambdaDynamo/statefile"
+    region         = "us-west-1"
+    encrypt        = true
+  }
+}
+
 # DynamoDB Table
 resource "aws_dynamodb_table" "users" {
   name             = "myDB"
