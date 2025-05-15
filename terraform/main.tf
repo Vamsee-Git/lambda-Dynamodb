@@ -69,6 +69,12 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamodb_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_xray_access" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}
+
+
 # Single Lambda Function
 resource "aws_lambda_function" "user_lambda" {
   function_name = "user_lambda"
