@@ -1,7 +1,5 @@
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch
 
 env:
   AWS_REGION: eu-north-1
