@@ -1,0 +1,58 @@
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: eu-north-1
+  ECR_REPO_APP: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-north-1.amazonaws.com/user-lambda
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::877786395093:role/github-oidc-vamsee
+          aws-region: us-west-2
+          id-token: true
+          
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Generate Unique Image Tag
+        run: echo "IMAGE_TAG=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
+      - name: Build and Push Docker Image for user_lambda
+        run: |
+          cd lambda/user_lambda
+          docker build -t app:$IMAGE_TAG .
+          docker tag app:$IMAGE_TAG $ECR_REPO_APP:$IMAGE_TAG
+          docker push $ECR_REPO_APP:$IMAGE_TAG
+
+      - name: Run Terraform Apply with dev.tfvars and Image URIs
+        run: |
+          cd terraform
+          terraform init
+          terraform apply -auto-approve \
+            -var-file=dev.tfvars \
+            -var="image_uri=$ECR_REPO_APP:$IMAGE_TAG"
+
+          terraform destroy -auto-approve \
+            -var-file=dev.tfvars \
+            -var="image_uri=$ECR_REPO_APP:$IMAGE_TAG"
